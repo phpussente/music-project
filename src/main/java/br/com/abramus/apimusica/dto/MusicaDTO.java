@@ -16,8 +16,6 @@ public class MusicaDTO {
         this.id = id;
     }
 
-    MusicaDTO dto = MusicaDTO.fromEntity(musica);
-
     public static MusicaDTO fromEntity(Musica musica) {
         return new MusicaDTO(musica.getId(), musica.getArtista(), musica.getTitulo());
     }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/musicas")
@@ -23,14 +24,22 @@ public class MusicaController {
 
     @GetMapping
     public List<MusicaDTO> listar() {
-        return repository.findAll().stream().map(MusicaDTO::fromEntity).toList();
+        return repository.findAll()
+                .stream()
+                .map(MusicaDTO::fromEntity)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Musica> buscarPorId(@PathVariable Long id) {
-        return repository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<MusicaDTO> buscarPorId(@PathVariable Long id) {
+        Optional<Musica> musicaOptional = repository.findById(id);
+        if (musicaOptional.isPresent()){
+            MusicaDTO dto = MusicaDTO.fromEntity(musicaOptional.get());
+            return ResponseEntity.ok(dto);
+        } else{
+            return ResponseEntity.notFound().build();
+        }
+
     }
 
     @PostMapping
@@ -41,23 +50,29 @@ public class MusicaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Musica> atualizar(@PathVariable Long id, @RequestBody Musica atualizada) {
-        return repository.findById(id)
-                .map(m -> {
-                    m.setTitulo(atualizada.getTitulo());
-                    m.setArtista(atualizada.getArtista());
-                    return ResponseEntity.ok(repository.save(m));
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<MusicaDTO> atualizar(@PathVariable Long id, @RequestBody @Valid MusicaForm form) {
+        Optional<Musica> musicaOptional = repository.findById(id);
+        if(musicaOptional.isPresent()) {
+            Musica musica = musicaOptional.get();
+            musica.setTitulo(form.getTitulo());
+            musica.setArtista(form.getArtista());
+
+            Musica atualizada = repository.save(musica);
+            return ResponseEntity.ok(MusicaDTO.fromEntity(atualizada));
+        }else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        if (repository.existsById(id)) {
+        Optional<Musica> musicaOptional = repository.findById(id);
+        if (musicaOptional.isPresent()) {
             repository.deleteById(id);
             return ResponseEntity.noContent().build();
+        }else {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
     }
 
 
