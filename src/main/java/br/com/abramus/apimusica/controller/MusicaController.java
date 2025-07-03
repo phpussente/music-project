@@ -1,12 +1,15 @@
-package br.com.abramus.api_musica.controller;
+package br.com.abramus.apimusica.controller;
 
-import br.com.abramus.api_musica.model.Musica;
-import br.com.abramus.api_musica.repository.MusicaRepository;
+import br.com.abramus.apimusica.dto.MusicaDTO;
+import br.com.abramus.apimusica.model.Musica;
+import br.com.abramus.apimusica.repository.MusicaRepository;
+import br.com.abramus.apimusica.form.MusicaForm;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/musicas")
@@ -19,8 +22,8 @@ public class MusicaController {
     }
 
     @GetMapping
-    public List<Musica> listar() {
-        return repository.findAll();
+    public List<MusicaDTO> listar() {
+        return repository.findAll().stream().map(MusicaDTO::fromEntity).toList();
     }
 
     @GetMapping("/{id}")
@@ -31,9 +34,10 @@ public class MusicaController {
     }
 
     @PostMapping
-    public ResponseEntity<Musica> cadastrar(@RequestBody Muisica musica) {
+    public ResponseEntity<MusicaDTO> cadastrar(@RequestBody @Valid MusicaForm form) {
+        Musica musica = form.toEntity();
         Musica salva = repository.save(musica);
-        return ResponseEntity.status(201).body(salva);
+        return ResponseEntity.status(201).body(MusicaDTO.fromEntity(salva));
     }
 
     @PutMapping("/{id}")
@@ -41,7 +45,7 @@ public class MusicaController {
         return repository.findById(id)
                 .map(m -> {
                     m.setTitulo(atualizada.getTitulo());
-                    m.setArtistas(atualizada.getArtistas());
+                    m.setArtista(atualizada.getArtista());
                     return ResponseEntity.ok(repository.save(m));
                 })
                 .orElse(ResponseEntity.notFound().build());

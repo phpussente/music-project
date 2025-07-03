@@ -1,6 +1,6 @@
-package br.com.abramus.api_musica.repository;
+package br.com.abramus.apimusica.repository;
 
-import br.com.abramus.api_musica.model.Musica;
+import br.com.abramus.apimusica.model.Musica;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MusicaRepository extends JpaRepository<Musica, Long>{}
